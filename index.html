@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodRush — Street Food & Fast Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #FF5C00;
+    --yellow: #FFD600;
+    --pink: #FF2D78;
+    --green: #00C853;
+    --dark: #0F0E0A;
+    --dark2: #1A1916;
+    --dark3: #252420;
+    --light: #FFF8F0;
+    --muted: #8A8680;
+    --card-bg: #1E1D19;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--dark); color: var(--light); font-family: var(--font-body); overflow-x: hidden; }
+
+  /* ─── PAGES ─── */
+  .page { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: rgba(15,14,10,0.92); backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,92,0,0.15);
+    padding: 0 2rem; height: 68px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { font-family: var(--font-head); font-size: 1.6rem; font-weight: 800; cursor: pointer; }
+  .nav-logo span:first-child { color: var(--orange); }
+  .nav-logo span:last-child { color: var(--yellow); }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    color: rgba(255,248,240,0.7); text-decoration: none; font-size: 0.9rem;
+    font-weight: 500; cursor: pointer; transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--orange); }
+  .nav-links a.active::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 2px; background: var(--orange); border-radius: 2px;
+  }
+  .nav-actions { display: flex; gap: 0.75rem; align-items: center; }
+  .nav-cart {
+    background: var(--orange); color: white; border: none;
+    padding: 0.5rem 1.25rem; border-radius: 50px; font-family: var(--font-body);
+    font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .nav-cart:hover { transform: scale(1.05); background: #ff7a2a; }
+  .cart-count {
+    background: var(--yellow); color: var(--dark); width: 20px; height: 20px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn-primary {
+    background: var(--orange); color: white; border: none;
+    padding: 0.875rem 2rem; border-radius: 50px; font-family: var(--font-body);
+    font-size: 1rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-primary:hover { transform: scale(1.04) translateY(-1px); background: #ff7a2a; box-shadow: 0 8px 24px rgba(255,92,0,0.4); }
+  .btn-secondary {
+    background: transparent; color: var(--light); border: 1.5px solid rgba(255,248,240,0.3);
+    padding: 0.875rem 2rem; border-radius: 50px; font-family: var(--font-body);
+    font-size: 1rem; font-weight: 500; cursor: pointer; transition: var(--transition);
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-sm {
+    padding: 0.5rem 1.25rem; font-size: 0.85rem; border-radius: 50px;
+    background: var(--orange); color: white; border: none; font-family: var(--font-body);
+    font-weight: 600; cursor: pointer; transition: var(--transition);
+  }
+  .btn-sm:hover { transform: scale(1.04); background: #ff7a2a; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center;
+    padding: 68px 2rem 0;
+    background: var(--dark);
+    position: relative; overflow: hidden;
+  }
+  .hero-blob {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.18; pointer-events: none;
+  }
+  .hero-blob-1 { width: 500px; height: 500px; background: var(--orange); top: -100px; right: -100px; }
+  .hero-blob-2 { width: 300px; height: 300px; background: var(--pink); bottom: 0; left: 10%; }
+  .hero-blob-3 { width: 200px; height: 200px; background: var(--yellow); top: 30%; left: 40%; }
+  .hero-inner { max-width: 1200px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(255,92,0,0.15); border: 1px solid rgba(255,92,0,0.35);
+    padding: 0.5rem 1rem; border-radius: 50px; margin-bottom: 1.5rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--orange); letter-spacing: 0.05em;
+  }
+  .hero-badge-dot { width: 6px; height: 6px; background: var(--orange); border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+  .hero h1 { font-family: var(--font-head); font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800; line-height: 1.05; margin-bottom: 1.5rem; }
+  .hero h1 .highlight { color: var(--orange); position: relative; }
+  .hero h1 .highlight2 { color: var(--yellow); }
+  .hero-desc { font-size: 1.1rem; color: rgba(255,248,240,0.65); line-height: 1.7; margin-bottom: 2.5rem; max-width: 480px; }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .hero-stats { display: flex; gap: 2.5rem; }
+  .stat-num { font-family: var(--font-head); font-size: 1.6rem; font-weight: 800; color: var(--light); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .hero-visual { position: relative; }
+  .hero-card-main {
+    background: var(--card-bg); border-radius: 24px; overflow: hidden;
+    border: 1px solid rgba(255,92,0,0.2); animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .hero-food-img {
+    width: 100%; height: 260px; object-fit: cover;
+    background: linear-gradient(135deg, #2a1a0a 0%, #3d2010 50%, #1a1005 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem;
+  }
+  .hero-card-info { padding: 1.25rem; }
+  .hero-card-info h3 { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .hero-card-meta { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--muted); }
+  .rating { color: var(--yellow); }
+  .delivery-badge {
+    position: absolute; top: -16px; right: -16px;
+    background: var(--yellow); color: var(--dark); padding: 0.75rem 1rem;
+    border-radius: 14px; font-weight: 700; font-size: 0.8rem; text-align: center;
+    box-shadow: 0 8px 24px rgba(255,214,0,0.4); animation: float 3s ease-in-out infinite 0.5s;
+  }
+  .popular-badge {
+    position: absolute; bottom: 80px; left: -20px;
+    background: var(--pink); color: white; padding: 0.6rem 1rem;
+    border-radius: 12px; font-weight: 700; font-size: 0.75rem;
+    animation: float 3.5s ease-in-out infinite 1s;
+  }
+
+  /* ─── SEARCH BAR ─── */
+  .search-section { padding: 2rem 2rem 4rem; }
+  .search-bar-wrap { max-width: 700px; margin: 0 auto; background: var(--dark2); border: 1px solid rgba(255,92,0,0.2); border-radius: 70px; padding: 0.5rem 0.5rem 0.5rem 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  .search-bar-wrap input { flex: 1; background: none; border: none; outline: none; font-size: 1rem; font-family: var(--font-body); color: var(--light); }
+  .search-bar-wrap input::placeholder { color: var(--muted); }
+  .search-btn { background: var(--orange); color: white; border: none; padding: 0.75rem 1.75rem; border-radius: 50px; font-family: var(--font-body); font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: var(--transition); }
+  .search-btn:hover { background: #ff7a2a; }
+
+  /* ─── SECTION TITLES ─── */
+  .section-title { font-family: var(--font-head); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 800; }
+  .section-sub { color: var(--muted); margin-top: 0.5rem; font-size: 1rem; }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+  .view-all { color: var(--orange); font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none; transition: color 0.2s; }
+  .view-all:hover { color: #ff7a2a; }
+
+  /* ─── CATEGORIES ─── */
+  .categories { padding: 3rem 2rem; }
+  .categories-inner { max-width: 1200px; margin: 0 auto; }
+  .cat-grid { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory; }
+  .cat-grid::-webkit-scrollbar { height: 4px; }
+  .cat-grid::-webkit-scrollbar-track { background: var(--dark2); border-radius: 4px; }
+  .cat-grid::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 4px; }
+  .cat-card {
+    flex: 0 0 130px; scroll-snap-align: start;
+    background: var(--card-bg); border-radius: var(--radius); padding: 1.25rem 1rem;
+    text-align: center; cursor: pointer; transition: var(--transition);
+    border: 1.5px solid transparent;
+  }
+  .cat-card:hover, .cat-card.active { border-color: var(--orange); transform: translateY(-4px); }
+  .cat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .cat-name { font-size: 0.8rem; font-weight: 600; color: rgba(255,248,240,0.8); }
+
+  /* ─── RESTAURANT CARDS ─── */
+  .restaurants { padding: 2rem 2rem 4rem; }
+  .restaurants-inner { max-width: 1200px; margin: 0 auto; }
+  .rest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .rest-card {
+    background: var(--card-bg); border-radius: var(--radius); overflow: hidden;
+    border: 1px solid rgba(255,248,240,0.06); cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .rest-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .rest-thumb {
+    height: 180px; display: flex; align-items: center; justify-content: center;
+    font-size: 4rem; position: relative;
+  }
+  .rest-thumb-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); }
+  .rest-badge {
+    position: absolute; top: 12px; left: 12px;
+    padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700;
+  }
+  .badge-offer { background: var(--green); color: white; }
+  .badge-popular { background: var(--orange); color: white; }
+  .badge-new { background: var(--pink); color: white; }
+  .rest-body { padding: 1rem 1.25rem 1.25rem; }
+  .rest-name { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .rest-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .tag { background: rgba(255,248,240,0.07); color: rgba(255,248,240,0.6); padding: 3px 10px; border-radius: 50px; font-size: 0.72rem; }
+  .rest-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
+  .rest-rating { color: var(--yellow); font-weight: 600; }
+  .rest-info { color: var(--muted); display: flex; gap: 1rem; }
+  .like-btn { background: rgba(255,45,120,0.1); border: none; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: var(--transition); }
+  .like-btn:hover { background: rgba(255,45,120,0.25); transform: scale(1.1); }
+
+  /* ─── PROMO BANNERS ─── */
+  .promos { padding: 1rem 2rem 4rem; }
+  .promos-inner { max-width: 1200px; margin: 0 auto; }
+  .promo-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; }
+  .promo-card {
+    border-radius: 20px; padding: 2rem; position: relative; overflow: hidden; cursor: pointer;
+    transition: var(--transition);
+  }
+  .promo-card:hover { transform: scale(1.02); }
+  .promo-card-1 { background: linear-gradient(135deg, #8B1A00 0%, #FF5C00 100%); }
+  .promo-card-2 { background: linear-gradient(135deg, #004D26 0%, #00C853 100%); }
+  .promo-card h3 { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .promo-card p { font-size: 0.85rem; opacity: 0.85; margin-bottom: 1.25rem; }
+  .promo-emoji { position: absolute; right: 1.5rem; bottom: 1rem; font-size: 4rem; opacity: 0.25; }
+  .promo-emoji-visible { position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%); font-size: 3rem; }
+
+  /* ─── POPULAR DISHES ─── */
+  .popular-dishes { padding: 2rem 2rem 4rem; }
+  .dishes-inner { max-width: 1200px; margin: 0 auto; }
+  .dishes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; }
+  .dish-card {
+    background: var(--card-bg); border-radius: var(--radius); overflow: hidden;
+    cursor: pointer; transition: var(--transition); border: 1px solid rgba(255,248,240,0.06);
+  }
+  .dish-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,0.4); }
+  .dish-img { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; }
+  .dish-info { padding: 0.875rem 1rem 1rem; }
+  .dish-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
+  .dish-rest { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .dish-price { font-family: var(--font-head); font-weight: 700; color: var(--orange); font-size: 1rem; }
+  .add-btn {
+    float: right; background: var(--orange); border: none; width: 28px; height: 28px;
+    border-radius: 8px; color: white; font-size: 1.1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: var(--transition);
+  }
+  .add-btn:hover { transform: scale(1.1); background: #ff7a2a; }
+
+  /* ─── APP DOWNLOAD ─── */
+  .app-section {
+    margin: 0 2rem 4rem; max-width: 1200px; margin-left: auto; margin-right: auto;
+    background: var(--dark2); border-radius: 24px; padding: 3rem;
+    display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 3rem;
+    border: 1px solid rgba(255,92,0,0.15);
+    position: relative; overflow: hidden;
+  }
+  .app-section::before {
+    content: ''; position: absolute; top: -80px; right: -80px;
+    width: 300px; height: 300px; background: var(--orange);
+    border-radius: 50%; opacity: 0.07;
+  }
+  .app-section h2 { font-family: var(--font-head); font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; }
+  .app-section p { color: var(--muted); line-height: 1.7; margin-bottom: 2rem; }
+  .app-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .store-btn {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: rgba(255,248,240,0.08); border: 1px solid rgba(255,248,240,0.15);
+    padding: 0.75rem 1.25rem; border-radius: 12px; cursor: pointer; transition: var(--transition);
+    color: var(--light); text-decoration: none;
+  }
+  .store-btn:hover { background: rgba(255,92,0,0.15); border-color: var(--orange); }
+  .store-btn-icon { font-size: 1.5rem; }
+  .store-btn-text small { display: block; font-size: 0.65rem; opacity: 0.6; }
+  .store-btn-text span { font-weight: 700; font-size: 0.9rem; }
+  .app-phones { display: flex; gap: 1rem; justify-content: center; font-size: 6rem; }
+
+  /* ─── RESTAURANT DETAIL PAGE ─── */
+  .rest-detail { padding-top: 68px; }
+  .rest-hero {
+    height: 300px; background: linear-gradient(135deg, #1a0a00, #3d1500);
+    display: flex; align-items: center; justify-content: center; font-size: 7rem;
+    position: relative; overflow: hidden;
+  }
+  .rest-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--dark) 0%, transparent 60%); }
+  .rest-hero-info { position: absolute; bottom: 2rem; left: 2rem; right: 2rem; }
+  .rest-hero-info h1 { font-family: var(--font-head); font-size: 2.2rem; font-weight: 800; }
+  .rest-hero-meta { display: flex; gap: 1.5rem; margin-top: 0.75rem; font-size: 0.85rem; color: rgba(255,248,240,0.75); }
+  .rest-hero-meta span { display: flex; align-items: center; gap: 0.35rem; }
+  .rest-content { max-width: 1100px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 1fr 360px; gap: 2rem; }
+  .menu-section h2 { font-family: var(--font-head); font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .menu-category { margin-bottom: 2.5rem; }
+  .menu-cat-title { font-size: 0.8rem; letter-spacing: 0.1em; font-weight: 600; color: var(--orange); text-transform: uppercase; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,92,0,0.2); }
+  .menu-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 0; border-bottom: 1px solid rgba(255,248,240,0.06);
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item-info { flex: 1; }
+  .menu-item-name { font-weight: 600; margin-bottom: 0.25rem; }
+  .menu-item-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .menu-item-price { font-family: var(--font-head); font-weight: 700; color: var(--orange); }
+  .menu-item-img { width: 80px; height: 80px; border-radius: 12px; background: var(--dark3); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-left: 1rem; flex-shrink: 0; }
+  .cart-panel { background: var(--card-bg); border-radius: 20px; padding: 1.5rem; border: 1px solid rgba(255,248,240,0.08); height: fit-content; position: sticky; top: 88px; }
+  .cart-panel h3 { font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; }
+  .cart-empty { text-align: center; padding: 2rem 0; color: var(--muted); font-size: 0.9rem; }
+  .cart-empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .cart-items { margin-bottom: 1.25rem; }
+  .cart-item { display: flex; align-items: center; justify-content: space-between; padding: 0.625rem 0; border-bottom: 1px solid rgba(255,248,240,0.06); font-size: 0.875rem; }
+  .cart-item-qty { display: flex; align-items: center; gap: 0.5rem; }
+  .qty-btn { background: rgba(255,248,240,0.08); border: none; width: 24px; height: 24px; border-radius: 6px; color: white; cursor: pointer; font-size: 0.9rem; transition: background 0.2s; }
+  .qty-btn:hover { background: var(--orange); }
+  .cart-total { border-top: 1px solid rgba(255,248,240,0.1); padding-top: 1rem; }
+  .cart-total-row { display: flex; justify-content: space-between; font-size: 0.875rem; padding: 0.3rem 0; }
+  .cart-total-row.grand { font-weight: 700; font-size: 1rem; margin-top: 0.5rem; }
+  .checkout-btn { width: 100%; margin-top: 1.25rem; padding: 0.875rem; background: var(--orange); color: white; border: none; border-radius: 12px; font-family: var(--font-body); font-weight: 700; font-size: 1rem; cursor: pointer; transition: var(--transition); }
+  .checkout-btn:hover { background: #ff7a2a; transform: scale(1.02); }
+
+  /* ─── ORDERS PAGE ─── */
+  .orders-page { padding: 88px 2rem 4rem; max-width: 900px; margin: 0 auto; }
+  .orders-page h1 { font-family: var(--font-head); font-size: 2rem; font-weight: 800; margin-bottom: 2rem; }
+  .order-card { background: var(--card-bg); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.25rem; border: 1px solid rgba(255,248,240,0.07); display: flex; gap: 1.5rem; align-items: center; }
+  .order-icon { width: 64px; height: 64px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+  .order-icon-delivered { background: rgba(0,200,83,0.1); }
+  .order-icon-ongoing { background: rgba(255,92,0,0.1); }
+  .order-info { flex: 1; }
+  .order-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
+  .order-items { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .order-meta { display: flex; gap: 1.5rem; font-size: 0.8rem; }
+  .status-delivered { color: var(--green); font-weight: 600; }
+  .status-ongoing { color: var(--orange); font-weight: 600; }
+  .progress-bar { height: 4px; background: rgba(255,248,240,0.1); border-radius: 4px; margin-top: 0.75rem; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--orange); border-radius: 4px; transition: width 0.5s ease; }
+  .track-steps { display: flex; justify-content: space-between; margin-top: 0.75rem; }
+  .track-step { text-align: center; font-size: 0.7rem; color: var(--muted); flex: 1; position: relative; }
+  .track-step.done { color: var(--green); }
+  .track-step.active { color: var(--orange); }
+
+  /* ─── PROFILE PAGE ─── */
+  .profile-page { padding: 88px 2rem 4rem; max-width: 900px; margin: 0 auto; }
+  .profile-header { display: flex; align-items: center; gap: 2rem; margin-bottom: 3rem; background: var(--card-bg); padding: 2rem; border-radius: 20px; }
+  .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), var(--pink)); display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+  .profile-name { font-family: var(--font-head); font-size: 1.5rem; font-weight: 700; }
+  .profile-email { color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem; }
+  .profile-stats { display: flex; gap: 2rem; margin-top: 1rem; }
+  .profile-stat-num { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; }
+  .profile-stat-lbl { font-size: 0.75rem; color: var(--muted); }
+  .profile-section { margin-bottom: 2rem; }
+  .profile-section-title { font-family: var(--font-head); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.8rem; }
+  .settings-item {
+    background: var(--card-bg); padding: 1rem 1.25rem; border-radius: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.6rem; cursor: pointer; transition: background 0.2s;
+    border: 1px solid rgba(255,248,240,0.06);
+  }
+  .settings-item:hover { background: rgba(255,92,0,0.07); }
+  .settings-item-left { display: flex; align-items: center; gap: 1rem; }
+  .settings-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .icon-bg-orange { background: rgba(255,92,0,0.15); }
+  .icon-bg-pink { background: rgba(255,45,120,0.15); }
+  .icon-bg-green { background: rgba(0,200,83,0.15); }
+  .icon-bg-yellow { background: rgba(255,214,0,0.15); }
+  .settings-label { font-weight: 500; font-size: 0.9rem; }
+  .settings-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+  .arrow { color: var(--muted); font-size: 1.2rem; }
+
+  /* ─── FOOTER ─── */
+  footer { background: var(--dark2); padding: 3rem 2rem 2rem; border-top: 1px solid rgba(255,248,240,0.06); }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem; }
+  .footer-brand p { color: var(--muted); font-size: 0.875rem; line-height: 1.7; margin-top: 1rem; max-width: 280px; }
+  .footer-col h4 { font-weight: 700; font-size: 0.9rem; margin-bottom: 1.25rem; }
+  .footer-col a { display: block; color: var(--muted); text-decoration: none; font-size: 0.875rem; margin-bottom: 0.75rem; transition: color 0.2s; cursor: pointer; }
+  .footer-col a:hover { color: var(--orange); }
+  .footer-bottom { max-width: 1200px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid rgba(255,248,240,0.06); display: flex; justify-content: space-between; color: var(--muted); font-size: 0.8rem; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+    background: var(--card-bg); border: 1px solid rgba(255,92,0,0.3);
+    border-left: 3px solid var(--orange); padding: 1rem 1.5rem;
+    border-radius: 12px; font-size: 0.9rem; max-width: 300px;
+    transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(0); }
+  .toast-title { font-weight: 700; margin-bottom: 0.25rem; }
+  .toast-msg { color: var(--muted); font-size: 0.8rem; }
+
+  /* ─── MISC ─── */
+  .divider { width: 60px; height: 4px; background: var(--orange); border-radius: 4px; margin: 1rem 0 2rem; }
+  .chip { display: inline-flex; align-items: center; background: rgba(255,92,0,0.12); color: var(--orange); padding: 4px 12px; border-radius: 50px; font-size: 0.78rem; font-weight: 600; }
+
+  @media (max-width: 768px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .promo-grid { grid-template-columns: 1fr; }
+    .rest-content { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    .app-section { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+</style>
+<link id="css-theme" rel="stylesheet" type="text/css" href="/css-theme_e8a4f1b118ff8d52ecc804c33f37fa284b9b8e24.css">
+<script id="scripts" type="text/javascript" src="/scripts_853bb7c935fdebf0c5fe6bc9b19347595f484185.js"></script>
+<meta name="referrer" content="same-origin" />
+
+			<link rel="icon" sizes="16x16" type="image/png" href=/assets/favicon_16.png />
+			<link rel="icon" sizes="32x32" type="image/png" href=/assets/favicon_32.png />
+				<link rel="icon" sizes="any" type="image/svg+xml" href=/assets/favicon.svg />
+<title>Xerago Chat</title><meta name="application-name" content="Xerago Chat"><meta name="apple-mobile-web-app-title" content="Xerago Chat">
+<meta http-equiv="content-language" content=""><meta name="language" content="">
+<meta name="robots" content="INDEX,FOLLOW">
+<meta name="msvalidate.01" content="">
+<meta name="google-site-verification" content="">
+<meta property="fb:app_id" content="">
+<base href="/">
+</head>
+<body>
+
+<noscript style="color: white; text-align:center">
+	You need to enable JavaScript to run this app.
+</noscript>
+<div id="react-root">
+	<div class="page-loading" role="alert" aria-busy="true" aria-live="polite" aria-label="loading">
+		<div class="loading__animation">
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+			<div class="loading__animation__bounce"></div>
+		</div>
+	</div>
+</div>
+
+<style id='css-variables'> :root {}</style>
+
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')"><span>Food</span><span>Rush</span></div>
+  <div class="nav-links">
+    <a onclick="showPage('home')" id="nav-home" class="active">Home</a>
+    <a onclick="showPage('restaurants')" id="nav-restaurants">Restaurants</a>
+    <a onclick="showPage('orders')" id="nav-orders">My Orders</a>
+    <a onclick="showPage('profile')" id="nav-profile">Profile</a>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-cart" onclick="showPage('cart')">
+      🛒 Cart
+      <span class="cart-count" id="cart-count-nav">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-title" id="toast-title">Added to cart!</div>
+  <div class="toast-msg" id="toast-msg">Item added successfully</div>
+</div>
+
+<!-- ═══════════════════════════════ HOME PAGE ═══════════════════════════════ -->
+<div class="page active" id="page-home">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-blob hero-blob-1"></div>
+    <div class="hero-blob hero-blob-2"></div>
+    <div class="hero-blob hero-blob-3"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge"><div class="hero-badge-dot"></div>🚀 Fast Delivery in 25 mins</div>
+        <h1>Your Fav <span class="highlight">Street Food</span> At Your <span class="highlight2">Doorstep</span></h1>
+        <p class="hero-desc">Discover the best local street food joints & fast food chains. Order hot, fresh meals delivered blazing fast to your door.</p>
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="showPage('restaurants')">🍜 Order Now</button>
+          <button class="btn-secondary" onclick="showPage('restaurants')">Explore Restaurants →</button>
+        </div>
+        <div class="hero-stats">
+          <div><div class="stat-num">500+</div><div class="stat-label">Restaurants</div></div>
+          <div><div class="stat-num">25k+</div><div class="stat-label">Happy Customers</div></div>
+          <div><div class="stat-num">4.8★</div><div class="stat-label">Average Rating</div></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card-main">
+          <div class="hero-food-img">🍔</div>
+          <div class="hero-card-info">
+            <h3>Street Burger Co.</h3>
+            <div class="hero-card-meta">
+              <span class="rating">⭐ 4.9</span>
+              <span>🕐 20-30 min</span>
+              <span>🛵 Free delivery</span>
+            </div>
+          </div>
+        </div>
+        <div class="delivery-badge">⚡ 25 min<br>delivery</div>
+        <div class="popular-badge">🔥 #1 Popular</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search -->
+  <div class="search-section" style="padding-top:0; margin-top:-1rem;">
+    <div class="search-bar-wrap">
+      <span>🔍</span>
+      <input type="text" placeholder="Search for food, restaurants, or cuisine...">
+      <button class="search-btn" onclick="showPage('restaurants')">Search</button>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <section class="categories">
+    <div class="categories-inner">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Browse by <span style="color:var(--orange)">Category</span></div>
+          <div class="section-sub">What are you craving today?</div>
+        </div>
+      </div>
+      <div class="cat-grid">
+        <div class="cat-card active" onclick="filterCat(this,'all')"><div class="cat-icon">🍽️</div><div class="cat-name">All</div></div>
+        <div class="cat-card" onclick="filterCat(this,'burger')"><div class="cat-icon">🍔</div><div class="cat-name">Burgers</div></div>
+        <div class="cat-card" onclick="filterCat(this,'pizza')"><div class="cat-icon">🍕</div><div class="cat-name">Pizza</div></div>
+        <div class="cat-card" onclick="filterCat(this,'biryani')"><div class="cat-icon">🍛</div><div class="cat-name">Biryani</div></div>
+        <div class="cat-card" onclick="filterCat(this,'noodles')"><div class="cat-icon">🍜</div><div class="cat-name">Noodles</div></div>
+        <div class="cat-card" onclick="filterCat(this,'sandwich')"><div class="cat-icon">🥪</div><div class="cat-name">Sandwiches</div></div>
+        <div class="cat-card" onclick="filterCat(this,'wraps')"><div class="cat-icon">🌯</div><div class="cat-name">Wraps</div></div>
+        <div class="cat-card" onclick="filterCat(this,'dessert')"><div class="cat-icon">🍦</div><div class="cat-name">Desserts</div></div>
+        <div class="cat-card" onclick="filterCat(this,'drinks')"><div class="cat-icon">🧃</div><div class="cat-name">Drinks</div></div>
+        <div class="cat-card" onclick="filterCat(this,'snacks')"><div class="cat-icon">🥡</div><div class="cat-name">Snacks</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Restaurants -->
+  <section class="restaurants">
+    <div class="restaurants-inner">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Top <span style="color:var(--orange)">Restaurants</span></div>
+          <div class="section-sub">Nearby picks with stellar ratings</div>
+        </div>
+        <a class="view-all" onclick="showPage('restaurants')">View all →</a>
+      </div>
+      <div class="rest-grid" id="home-rest-grid">
+        <!-- Cards injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Promos -->
+  <section class="promos">
+    <div class="promos-inner">
+      <div class="section-title" style="margin-bottom:1.5rem;">🎉 Hot <span style="color:var(--orange)">Deals</span></div>
+      <div class="promo-grid">
+        <div class="promo-card promo-card-1" onclick="showPage('restaurants')">
+          <h3>50% OFF on First Order</h3>
+          <p>Use code RUSH50 on your first delivery order. Valid till midnight!</p>
+          <button class="btn-sm" style="background:white;color:var(--orange);">Grab Deal →</button>
+          <div class="promo-emoji">🔥</div>
+        </div>
+        <div class="promo-card promo-card-2" onclick="showPage('restaurants')">
+          <h3>Free Delivery Weekend</h3>
+          <p>No delivery charges this weekend on all orders above ₹199.</p>
+          <button class="btn-sm" style="background:white;color:var(--green);">Order Now →</button>
+          <div class="promo-emoji">🛵</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular Dishes -->
+  <section class="popular-dishes">
+    <div class="dishes-inner">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Trending <span style="color:var(--yellow)">Dishes</span></div>
+          <div class="section-sub">Everyone's ordering these right now</div>
+        </div>
+      </div>
+      <div class="dishes-grid" id="dishes-grid">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- App Download -->
+  <div style="padding: 0 2rem 4rem; max-width:1200px; margin:0 auto;">
+    <div class="app-section">
+      <div>
+        <div class="chip" style="margin-bottom:1rem;">📱 Mobile App</div>
+        <h2>Order Faster on the <span style="color:var(--orange)">App</span></h2>
+        <p>Get exclusive app-only deals, real-time tracking, and a seamless ordering experience on iOS & Android.</p>
+        <div class="app-btns">
+          <div class="store-btn">
+            <div class="store-btn-icon">🍎</div>
+            <div class="store-btn-text"><small>Download on the</small><span>App Store</span></div>
+          </div>
+          <div class="store-btn">
+            <div class="store-btn-icon">🤖</div>
+            <div class="store-btn-text"><small>Get it on</small><span>Google Play</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="app-phones">📱🍔</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-logo"><span>Food</span><span>Rush</span></div>
+        <p>Bringing the best local street food & fast food right to your doorstep. Fast, fresh, and delicious — every single time.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a>About Us</a><a>Careers</a><a>Blog</a><a>Press</a>
+      </div>
+      <div class="footer-col">
+        <h4>For Restaurants</h4>
+        <a>Partner With Us</a><a>List Your Restaurant</a><a>Business App</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a>Help Centre</a><a>Safety</a><a>Terms of Service</a><a>Privacy Policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 FoodRush. All rights reserved.</span>
+      <span>Made with ❤️ in India</span>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════ RESTAURANTS PAGE ═══════════════════════════════ -->
+<div class="page" id="page-restaurants">
+  <div style="padding: 88px 2rem 4rem; max-width:1200px; margin:0 auto;">
+    <div style="margin-bottom:2rem;">
+      <h1 class="section-title">All <span style="color:var(--orange)">Restaurants</span></h1>
+      <div class="divider"></div>
+      <div class="search-bar-wrap" style="max-width:100%; margin:0 0 1.5rem;">
+        <span>🔍</span>
+        <input type="text" placeholder="Search restaurants or dishes..." id="rest-search">
+        <button class="search-btn" onclick="filterRestaurants()">Search</button>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        <button class="btn-sm" onclick="showPage('cart')">🛒 View Cart</button>
+        <button class="btn-secondary" style="padding:0.5rem 1.25rem;font-size:0.85rem;">⭐ Top Rated</button>
+        <button class="btn-secondary" style="padding:0.5rem 1.25rem;font-size:0.85rem;">🚀 Fastest</button>
+        <button class="btn-secondary" style="padding:0.5rem 1.25rem;font-size:0.85rem;">💸 Budget</button>
+      </div>
+    </div>
+    <div class="rest-grid" id="all-rest-grid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ RESTAURANT DETAIL PAGE ═══════════════════════════════ -->
+<div class="page" id="page-restaurant-detail">
+  <div class="rest-detail">
+    <div class="rest-hero" id="detail-hero">
+      <div style="font-size:7rem;z-index:1;position:relative;" id="detail-emoji">🍔</div>
+      <div class="rest-hero-overlay"></div>
+      <div class="rest-hero-info">
+        <div class="chip" id="detail-badge" style="margin-bottom:0.5rem;">🔥 Popular</div>
+        <h1 id="detail-name">Restaurant Name</h1>
+        <div class="rest-hero-meta">
+          <span id="detail-rating">⭐ 4.8</span>
+          <span id="detail-time">🕐 25-35 min</span>
+          <span>📍 1.2 km away</span>
+          <span id="detail-delivery">🛵 Free Delivery</span>
+        </div>
+      </div>
+    </div>
+    <div class="rest-content">
+      <div class="menu-section" id="detail-menu">
+        <!-- Injected by JS -->
+      </div>
+      <div>
+        <div class="cart-panel" id="cart-panel">
+          <h3>🛒 Your Order</h3>
+          <div id="cart-panel-content"><div class="cart-empty"><div class="cart-empty-icon">🛒</div><div>Your cart is empty</div><div style="font-size:0.78rem;margin-top:0.5rem;">Add items to get started!</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ CART PAGE ═══════════════════════════════ -->
+<div class="page" id="page-cart">
+  <div style="padding:88px 2rem 4rem; max-width:700px; margin:0 auto;">
+    <h1 class="section-title" style="margin-bottom:0.5rem;">Your <span style="color:var(--orange)">Cart</span></h1>
+    <div class="divider"></div>
+    <div id="cart-page-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ORDERS PAGE ═══════════════════════════════ -->
+<div class="page" id="page-orders">
+  <div class="orders-page">
+    <h1>My <span style="color:var(--orange)">Orders</span></h1>
+    <div style="margin-bottom:1.5rem;display:flex;gap:1rem;">
+      <button class="btn-sm" style="background:var(--orange);">Active</button>
+      <button class="btn-secondary" style="padding:0.5rem 1.25rem;font-size:0.85rem;">Past Orders</button>
+    </div>
+
+    <!-- Active Order -->
+    <div class="order-card" style="border:1px solid rgba(255,92,0,0.3);margin-bottom:1rem;">
+      <div class="order-icon order-icon-ongoing"><span style="font-size:2rem;">🛵</span></div>
+      <div class="order-info" style="flex:1;">
+        <div class="order-name">Burger Bros</div>
+        <div class="order-items">Double Smash Burger × 2, Loaded Fries × 1</div>
+        <div class="order-meta">
+          <span class="status-ongoing">⚡ On the way</span>
+          <span style="color:var(--muted);">₹ 489</span>
+          <span style="color:var(--muted);">Today, 8:20 PM</span>
+        </div>
+        <div class="progress-bar" style="margin-top:1rem;"><div class="progress-fill" style="width:70%"></div></div>
+        <div class="track-steps">
+          <div class="track-step done">✅ Placed</div>
+          <div class="track-step done">✅ Preparing</div>
+          <div class="track-step active">🛵 On way</div>
+          <div class="track-step">📦 Delivered</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Past Orders -->
+    <div style="font-family:var(--font-head);font-size:1rem;font-weight:700;margin:2rem 0 1rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Past Orders</div>
+    <div id="past-orders"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PROFILE PAGE ═══════════════════════════════ -->
+<div class="page" id="page-profile">
+  <div class="profile-page">
+    <div class="profile-header">
+      <div class="avatar">👤</div>
+      <div style="flex:1;">
+        <div class="profile-name">Arjun Sharma</div>
+        <div class="profile-email">arjun.sharma@email.com</div>
+        <div class="profile-stats">
+          <div><div class="profile-stat-num">47</div><div class="profile-stat-lbl">Orders</div></div>
+          <div><div class="profile-stat-num">12</div><div class="profile-stat-lbl">Reviews</div></div>
+          <div><div class="profile-stat-num">₹4.2k</div><div class="profile-stat-lbl">Saved</div></div>
+        </div>
+      </div>
+      <button class="btn-sm">Edit Profile</button>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">Account</div>
+      <div class="settings-item"><div class="settings-item-left"><div class="settings-icon icon-bg-orange">📍</div><div><div class="settings-label">Saved Addresses</div><div class="settings-sub">Home, Work, Others</div></div></div><div class="arrow">›</div></div>
+      <div class="settings-item"><div class="settings-item-left"><div class="settings-icon icon-bg-pink">❤️</div><div><div class="settings-label">Favourites</div><div class="settings-sub">12 restaurants saved</div></div></div><div class="arrow">›</div></div>
+      <div class="settings-item"><div class="settings-item-left"><div class="settings-icon icon-bg-yellow">💳</div><div><div class="settings-label">Payment Methods</div><div class="settings-sub">UPI, Cards, Wallets</div></div></div><div class="arrow">›</div></div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">Offers & Rewards</div>
+      <div class="settings-item"><div class="settings-item-left"><div class="settings-icon icon-bg-orange">🎁</div><div><div class="settings-label">FoodRush Gold</div><div class="settings-sub">Unlock exclusive benefits</div></div></div><div style="background:var(--orange);padding:4px 12px;border-radius:50px;font-size:0.75rem;font-weight:700;color:white;">Upgrade</div></div>
+      <div class="settings-item"><div class="settings-item-left"><div class="settings-icon icon-bg-green">🏷️</div><div><div class="settings-label">Coupons & Vouchers</div><div class="settings-sub">3 active coupons</div></div></div><div class="arrow">›</div></div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">Support</div>
+      <div class="settings-item"><div class="settings-item-left"><div class="settings-icon icon-bg-yellow">📞</div><div><div class="settings-label">Help & Support</div><div class="settings-sub">24/7 chat support</div></div></div><div class="arrow">›</div></div>
+      <div class="settings-item" style="border:1px solid rgba(255,45,120,0.2);"><div class="settings-item-left"><div class="settings-icon icon-bg-pink">🚪</div><div><div class="settings-label" style="color:var(--pink);">Log Out</div></div></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const restaurants = [
+  { id:1, name:"Burger Bros", emoji:"🍔", tags:["Burgers","Fast Food","Wraps"], rating:"4.9", time:"20-30 min", delivery:"Free delivery", badge:"popular", color:"#2d1a00", reviews:"2.3k" },
+  { id:2, name:"Spice Street Biryani", emoji:"🍛", tags:["Biryani","North Indian","Rice"], rating:"4.8", time:"30-40 min", delivery:"₹30 delivery", badge:"offer", color:"#1a0d00", reviews:"1.8k" },
+  { id:3, name:"Noodle Nation", emoji:"🍜", tags:["Noodles","Chinese","Momos"], rating:"4.7", time:"25-35 min", delivery:"Free delivery", badge:"new", color:"#001a0d", reviews:"975" },
+  { id:4, name:"Pizza Planet", emoji:"🍕", tags:["Pizza","Italian","Pasta"], rating:"4.6", time:"35-45 min", delivery:"₹25 delivery", badge:"popular", color:"#1a0020", reviews:"3.1k" },
+  { id:5, name:"Frankie's Rolls", emoji:"🌯", tags:["Wraps","Rolls","Street Food"], rating:"4.8", time:"15-25 min", delivery:"Free delivery", badge:"offer", color:"#00151a", reviews:"1.2k" },
+  { id:6, name:"Dosa Darbar", emoji:"🥞", tags:["South Indian","Dosa","Idli"], rating:"4.9", time:"20-30 min", delivery:"Free delivery", badge:"popular", color:"#1a1000", reviews:"4.2k" },
+  { id:7, name:"Sandwich Society", emoji:"🥪", tags:["Sandwiches","Cafe","Healthy"], rating:"4.5", time:"25-35 min", delivery:"₹20 delivery", badge:"new", color:"#0d001a", reviews:"640" },
+  { id:8, name:"Ice Cream Island", emoji:"🍦", tags:["Desserts","Shakes","Ice Cream"], rating:"4.7", time:"20-30 min", delivery:"Free delivery", badge:"offer", color:"#001a1a", reviews:"1.5k" },
+];
+
+const menus = {
+  1: {
+    "🔥 Burgers": [
+      { name:"Classic Smash Burger", desc:"Double patty, cheddar cheese, special sauce", price:199, emoji:"🍔" },
+      { name:"Crispy Chicken Burger", desc:"Fried chicken, coleslaw, sriracha mayo", price:179, emoji:"🍗" },
+      { name:"BBQ Bacon Stack", desc:"Triple patty, bacon strips, BBQ sauce", price:249, emoji:"🥓" },
+    ],
+    "🍟 Sides & Snacks": [
+      { name:"Loaded Masala Fries", desc:"Golden fries with masala seasoning & dips", price:99, emoji:"🍟" },
+      { name:"Onion Rings Basket", desc:"Crispy golden onion rings (8 pcs)", price:119, emoji:"🧅" },
+    ],
+    "🥤 Drinks": [
+      { name:"Cold Coffee Shake", desc:"Thick blended coffee milkshake", price:89, emoji:"☕" },
+      { name:"Fresh Lime Soda", desc:"Iced lime soda with mint", price:59, emoji:"🍋" },
+    ]
+  },
+  2: {
+    "🍛 Biryani": [
+      { name:"Hyderabadi Chicken Dum", desc:"Slow-cooked dum biryani with saffron rice", price:229, emoji:"🍛" },
+      { name:"Mutton Biryani Royal", desc:"Tender mutton with aromatic basmati rice", price:299, emoji:"🍖" },
+      { name:"Veg Biryani Special", desc:"Fresh vegetables in fragrant basmati rice", price:169, emoji:"🥦" },
+    ],
+    "🥗 Sides": [
+      { name:"Raita Bowl", desc:"Fresh cucumber and mint raita", price:49, emoji:"🥗" },
+      { name:"Salan Gravy", desc:"Spiced gravy for biryani accompaniment", price:79, emoji:"🍲" },
+    ],
+  },
+  3: {
+    "🍜 Noodles": [
+      { name:"Hakka Chilli Noodles", desc:"Spicy hakka noodles with mixed veggies", price:149, emoji:"🍜" },
+      { name:"Schezwan Fried Noodles", desc:"Fiery schezwan sauce noodles", price:169, emoji:"🥡" },
+    ],
+    "🥟 Momos": [
+      { name:"Veg Steam Momos (8pc)", desc:"Steamed dumplings with spicy chutney", price:99, emoji:"🥟" },
+      { name:"Chicken Fried Momos", desc:"Pan-fried momos with dragon sauce", price:129, emoji:"🍗" },
+    ],
+  }
+};
+
+const dishes = [
+  { name:"Double Smash Burger", rest:"Burger Bros", price:199, emoji:"🍔", restId:1 },
+  { name:"Chicken Biryani", rest:"Spice Street", price:229, emoji:"🍛", restId:2 },
+  { name:"Hakka Noodles", rest:"Noodle Nation", price:149, emoji:"🍜", restId:3 },
+  { name:"Pepperoni Pizza", rest:"Pizza Planet", price:289, emoji:"🍕", restId:4 },
+  { name:"Chicken Frankie Roll", rest:"Frankie's Rolls", price:129, emoji:"🌯", restId:5 },
+  { name:"Masala Dosa", rest:"Dosa Darbar", price:89, emoji:"🥞", restId:6 },
+  { name:"Club Sandwich", rest:"Sandwich Society", price:149, emoji:"🥪", restId:7 },
+  { name:"Belgian Waffle", rest:"Ice Cream Island", price:169, emoji:"🧇", restId:8 },
+];
+
+const pastOrders = [
+  { rest:"Pizza Planet", emoji:"🍕", items:"Pepperoni Pizza × 1, Garlic Bread × 2", date:"Yesterday", amount:"₹ 349" },
+  { rest:"Spice Street Biryani", emoji:"🍛", items:"Chicken Biryani × 2, Raita × 1", date:"2 days ago", amount:"₹ 507" },
+  { rest:"Noodle Nation", emoji:"🍜", items:"Hakka Noodles × 1, Chicken Momos × 1", date:"4 days ago", amount:"₹ 278" },
+];
+
+let cart = [];
+let currentPage = 'home';
+
+// ── RENDER FUNCTIONS ──
+function renderRestCard(r, onclick='') {
+  const badgeClass = r.badge === 'popular' ? 'badge-popular' : r.badge === 'offer' ? 'badge-offer' : 'badge-new';
+  const badgeText = r.badge === 'popular' ? '🔥 Popular' : r.badge === 'offer' ? '🏷️ Offer' : '✨ New';
+  return `
+    <div class="rest-card" onclick="openRestaurant(${r.id})">
+      <div class="rest-thumb" style="background:linear-gradient(135deg, ${r.color} 0%, #1a1005 100%);">
+        <span style="font-size:4rem;z-index:1;position:relative;">${r.emoji}</span>
+        <div class="rest-thumb-overlay"></div>
+        <div class="rest-badge ${badgeClass}">${badgeText}</div>
+      </div>
+      <div class="rest-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.25rem;">
+          <div class="rest-name">${r.name}</div>
+          <button class="like-btn" onclick="event.stopPropagation();this.textContent=this.textContent==='❤️'?'🤍':'❤️'">🤍</button>
+        </div>
+        <div class="rest-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div class="rest-meta">
+          <span class="rest-rating">⭐ ${r.rating} (${r.reviews})</span>
+          <div class="rest-info">
+            <span>🕐 ${r.time}</span>
+            <span>${r.delivery}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderDishCard(d) {
+  return `
+    <div class="dish-card" onclick="openRestaurant(${d.restId})">
+      <div class="dish-img" style="background:linear-gradient(135deg,#1a0d00,#2d1500);">${d.emoji}</div>
+      <div class="dish-info">
+        <div class="dish-name">${d.name}</div>
+        <div class="dish-rest">📍 ${d.rest}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="dish-price">₹${d.price}</div>
+          <button class="add-btn" onclick="event.stopPropagation();quickAddToCart('${d.name}',${d.price},'${d.emoji}')">+</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('home-rest-grid').innerHTML = restaurants.slice(0,6).map(r=>renderRestCard(r)).join('');
+  document.getElementById('all-rest-grid').innerHTML = restaurants.map(r=>renderRestCard(r)).join('');
+  document.getElementById('dishes-grid').innerHTML = dishes.map(d=>renderDishCard(d)).join('');
+  document.getElementById('past-orders').innerHTML = pastOrders.map(o=>`
+    <div class="order-card">
+      <div class="order-icon" style="background:rgba(255,248,240,0.05);">${o.emoji}</div>
+      <div class="order-info">
+        <div class="order-name">${o.rest}</div>
+        <div class="order-items">${o.items}</div>
+        <div class="order-meta">
+          <span class="status-delivered">✅ Delivered</span>
+          <span style="color:var(--muted);">${o.amount}</span>
+          <span style="color:var(--muted);">${o.date}</span>
+        </div>
+      </div>
+      <button class="btn-sm">Reorder</button>
+    </div>`).join('');
+});
+
+// ── PAGE NAVIGATION ──
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const navEl = document.getElementById('nav-'+name);
+  if(navEl) navEl.classList.add('active');
+  currentPage = name;
+  window.scrollTo(0,0);
+  if(name==='cart') renderCartPage();
+}
+
+// ── RESTAURANT DETAIL ──
+function openRestaurant(id) {
+  const r = restaurants.find(x=>x.id===id);
+  if(!r) return;
+  document.getElementById('detail-emoji').textContent = r.emoji;
+  document.getElementById('detail-name').textContent = r.name;
+  document.getElementById('detail-rating').textContent = `⭐ ${r.rating}`;
+  document.getElementById('detail-time').textContent = `🕐 ${r.time}`;
+  document.getElementById('detail-delivery').textContent = `🛵 ${r.delivery}`;
+  document.getElementById('detail-hero').style.background = `linear-gradient(135deg, ${r.color} 0%, #2d1a00 100%)`;
+  const menu = menus[id] || menus[1];
+  let html = '<h2>Menu</h2>';
+  for(const [cat, items] of Object.entries(menu)) {
+    html += `<div class="menu-category"><div class="menu-cat-title">${cat}</div>`;
+    items.forEach(item=>{
+      html += `
+        <div class="menu-item">
+          <div class="menu-item-info">
+            <div class="menu-item-name">${item.name}</div>
+            <div class="menu-item-desc">${item.desc}</div>
+            <div class="menu-item-price">₹${item.price}</div>
+          </div>
+          <div class="menu-item-img">${item.emoji}</div>
+          <div style="margin-left:1rem;">
+            <button class="btn-sm" onclick="addToCart('${item.name}',${item.price},'${item.emoji}')">+ Add</button>
+          </div>
+        </div>`;
+    });
+    html += '</div>';
+  }
+  document.getElementById('detail-menu').innerHTML = html;
+  updateCartPanel();
+  showPage('restaurant-detail');
+}
+
+// ── CART ──
+function addToCart(name, price, emoji) {
+  const existing = cart.find(x=>x.name===name);
+  if(existing) existing.qty++;
+  else cart.push({name, price, emoji, qty:1});
+  updateCartCount();
+  updateCartPanel();
+  showToast('Added to cart!', `${emoji} ${name}`);
+}
+
+function quickAddToCart(name, price, emoji) {
+  addToCart(name, price, emoji);
+}
+
+function updateCartCount() {
+  const total = cart.reduce((s,x)=>s+x.qty,0);
+  document.getElementById('cart-count-nav').textContent = total;
+}
+
+function updateCartPanel() {
+  const panel = document.getElementById('cart-panel-content');
+  if(!panel) return;
+  if(cart.length===0){
+    panel.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🛒</div><div>Your cart is empty</div><div style="font-size:0.78rem;margin-top:0.5rem;">Add items to get started!</div></div>';
+    return;
+  }
+  const subtotal = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  panel.innerHTML = `
+    <div class="cart-items">
+      ${cart.map(item=>`
+        <div class="cart-item">
+          <div style="flex:1;">${item.emoji} ${item.name}</div>
+          <div class="cart-item-qty">
+            <button class="qty-btn" onclick="changeQty('${item.name}',-1)">−</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.name}',1)">+</button>
+          </div>
+          <div style="min-width:55px;text-align:right;font-weight:600;">₹${item.price*item.qty}</div>
+        </div>`).join('')}
+    </div>
+    <div class="cart-total">
+      <div class="cart-total-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+      <div class="cart-total-row"><span>Delivery</span><span style="color:var(--green);">Free</span></div>
+      <div class="cart-total-row"><span>Taxes</span><span>₹${Math.round(subtotal*0.05)}</span></div>
+      <div class="cart-total-row grand"><span>Total</span><span style="color:var(--orange);">₹${subtotal+Math.round(subtotal*0.05)}</span></div>
+    </div>
+    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout →</button>`;
+}
+
+function changeQty(name, delta) {
+  const item = cart.find(x=>x.name===name);
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty <= 0) cart = cart.filter(x=>x.name!==name);
+  updateCartCount();
+  updateCartPanel();
+  renderCartPage();
+}
+
+function renderCartPage() {
+  const el = document.getElementById('cart-page-content');
+  if(cart.length===0){
+    el.innerHTML = `<div style="text-align:center;padding:4rem 0;">
+      <div style="font-size:4rem;margin-bottom:1rem;">🛒</div>
+      <div style="font-family:var(--font-head);font-size:1.5rem;font-weight:700;margin-bottom:0.75rem;">Your cart is empty</div>
+      <div style="color:var(--muted);margin-bottom:2rem;">Add some delicious food to get started!</div>
+      <button class="btn-primary" onclick="showPage('restaurants')">Browse Restaurants →</button>
+    </div>`;
+    return;
+  }
+  const subtotal = cart.reduce((s,x)=>s+x.price*x.qty,0);
+  const tax = Math.round(subtotal*0.05);
+  el.innerHTML = `
+    <div style="background:var(--card-bg);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;border:1px solid rgba(255,248,240,0.07);">
+      ${cart.map(item=>`
+        <div class="cart-item" style="padding:0.875rem 0;">
+          <div style="display:flex;align-items:center;gap:0.75rem;flex:1;">
+            <div style="width:48px;height:48px;background:var(--dark3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">${item.emoji}</div>
+            <div><div style="font-weight:600;">${item.name}</div><div style="font-size:0.8rem;color:var(--muted);">₹${item.price} each</div></div>
+          </div>
+          <div class="cart-item-qty">
+            <button class="qty-btn" onclick="changeQty('${item.name}',-1)">−</button>
+            <span style="min-width:24px;text-align:center;">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.name}',1)">+</button>
+          </div>
+          <div style="min-width:65px;text-align:right;font-weight:700;font-family:var(--font-head);color:var(--orange);">₹${item.price*item.qty}</div>
+        </div>`).join('')}
+    </div>
+    <div style="background:var(--card-bg);border-radius:var(--radius);padding:1.5rem;border:1px solid rgba(255,248,240,0.07);">
+      <h3 style="font-family:var(--font-head);margin-bottom:1.25rem;">Order Summary</h3>
+      <div class="cart-total-row" style="display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.9rem;"><span>Subtotal</span><span>₹${subtotal}</span></div>
+      <div class="cart-total-row" style="display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.9rem;"><span>Delivery Fee</span><span style="color:var(--green);">FREE</span></div>
+      <div class="cart-total-row" style="display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.9rem;"><span>GST (5%)</span><span>₹${tax}</span></div>
+      <div style="border-top:1px solid rgba(255,248,240,0.1);margin:1rem 0;"></div>
+      <div style="display:flex;justify-content:space-between;font-size:1.1rem;font-weight:700;font-family:var(--font-head);"><span>Total</span><span style="color:var(--orange);">₹${subtotal+tax}</span></div>
+      <button class="checkout-btn" style="margin-top:1.5rem;" onclick="checkout()">Place Order — ₹${subtotal+tax} →</button>
+    </div>`;
+}
+
+function checkout() {
+  cart = [];
+  updateCartCount();
+  updateCartPanel();
+  showToast('🎉 Order Placed!', 'Your order is being prepared!');
+  setTimeout(()=>showPage('orders'), 1200);
+}
+
+// ── TOAST ──
+function showToast(title, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ── FILTERS ──
+function filterCat(el, cat) {
+  document.querySelectorAll('.cat-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function filterRestaurants() {
+  const q = document.getElementById('rest-search').value.toLowerCase();
+  const filtered = restaurants.filter(r=>
+    r.name.toLowerCase().includes(q) || r.tags.some(t=>t.toLowerCase().includes(q))
+  );
+  document.getElementById('all-rest-grid').innerHTML = filtered.map(r=>renderRestCard(r)).join('');
+}
+</script>
+</body>
+</html>
